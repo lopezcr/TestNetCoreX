@@ -6,7 +6,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using TestNetCoreX.Models;
-
+using Microsoft.AspNetCore.Http;
+ 
 namespace TestNetCoreX.Controllers
 {
     public class HomeController : Controller
@@ -20,6 +21,10 @@ namespace TestNetCoreX.Controllers
 
         public IActionResult Index()
         {
+            if (HttpContext.Session.GetString("UserData") == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             return View();
         }
 
