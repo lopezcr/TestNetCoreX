@@ -2,7 +2,7 @@
 
 namespace TestNetCoreX.AccessData
 {
-    public class Class1
+    public class Nota
     {
     }
 }
