@@ -26,6 +26,7 @@ namespace TestNetCoreX
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
             //del dbContext sin identity
             services.AddDbContext<ApplicationDbContext>(options =>
