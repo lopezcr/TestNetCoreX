@@ -4,14 +4,11 @@
 	Layout = "";
 }
 <html>
-
-
-
 <head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="css/style.css">
 	<link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
 	<title>Sign in</title>
 	<link rel="stylesheet" href="~/css/site.css" />
 
@@ -23,14 +20,110 @@
 	<div class="main">
 		<p class="sign" align="center">Sign in</p>
 		<form class="form1">
-			<input class="un " type="text" align="center" placeholder="Username">
-			<input class="pass" type="password" align="center" placeholder="Password">
-			<a class="submit" align="center">Sign in</a>
+			<input class="un " type="text" align="center" placeholder="Email" id="email" name="email">
+			<input class="pass" type="password" align="center" placeholder="Contraseña" id="password" name="password">
+			<input type="button" value="Iniciar sesion" class="submit" align="center" id="btnLogin" />
 			<p class="forgot" align="center"><a href="#">Forgot Password?</p>
-		</form >
+		</form>
+	</div>
+
+	@Html.AntiForgeryToken();
+
+	<script>
+		$(document).ready(function () {
+
+			// jQuery methods go here...
 
 
-</div>
+
+			$("#btnLogin").click(function () {
+				 
+				var dataEnviar = {
+					email: $("#email").val(),
+					passWord: $("#password").val()
+				};
+
+				var dataJson = JSON.stringify(dataEnviar);
+
+				console.log(dataEnviar);
+				 
+
+				$.ajax({
+
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+
+					type: "POST",
+					url: " /api/usuario/login",
+					data: dataJson,
+					success: function (data) {
+						console.log(data);
+
+						try {
+							//dataJS = JSON.parse(data);
+							if (data.isSuccess == true) {
+								window.location.replace("/home");
+							} else {
+								console.log("Usuario no encontrado")
+							}
+						}
+						catch {
+							//console.log(2);
+
+							//Swal.fire({
+							//	imageUrl: $('#URL_BASE').val() + 'images/IconRedError.png',
+							//	imageWidth: 50,
+							//	imageHeight: 50,
+							//	imageAlt: 'Custom image',
+							//	title: '¡Lo sentimos!',
+							//	confirmButtonText:
+							//		'Regresar',
+							//	text: 'No se pudo completar la accion',
+							//	footer: '<img class="footerCustomAler" src="' + $('#URL_BASE').val() + 'images/possic2.png" ></img>',
+							//	customClass: {
+							//		container: 'sweetCustomMsj'
+							//	}
+							//})
+						}
+					},
+					error: function () {
+						//clienteSeleccionado = null;
+
+						//Swal.fire({
+						//	imageUrl: $('#URL_BASE').val() + 'images/IconRedError.png',
+						//	imageWidth: 50,
+						//	imageHeight: 50,
+						//	imageAlt: 'Custom image',
+						//	title: '¡Lo sentimos!',
+						//	confirmButtonText:
+						//		'Regresar',
+						//	text: 'No se pudo acompletar la accion',
+						//	footer: '<img class="footerCustomAler" src="' + $('#URL_BASE').val() + 'images/possic2.png" ></img>',
+						//	customClass: {
+						//		container: 'sweetCustomMsj'
+						//	}
+						//});
+					}, beforeSend: function () {
+						//Swal.fire({
+						//	allowOutsideClick: false,
+						//	showConfirmButton: false,
+						//	showClass: {
+						//		popup: 'animated fadeIn faster'
+						//	},
+						//	customClass: {
+						//		container: 'sweetLoadingcontent'
+						//	},
+						//	html: "<div class='animacionJson'><lottie-player src='" + $('#URL_BASE').val() + "js/Loading.json' background='transparent' speed='1' style='width: 150px; height: 150px;' loop  autoplay>" +
+						//		"</lottie-player></div>"
+						//});
+					}
+				})
+
+			});;
+
+
+		});
+	</script>
 
 </body>
 

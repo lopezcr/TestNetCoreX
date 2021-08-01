@@ -21,7 +21,7 @@ namespace TestNetCoreX.Controllers
 
         public IActionResult Index()
         {
-            if (HttpContext.Session.GetString("UserData") == null)
+            if (HttpContext.Session.GetString("IsLogin") == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -37,6 +37,13 @@ namespace TestNetCoreX.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+
+        public IActionResult CerraSesion()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index", "Login");
         }
     }
 }

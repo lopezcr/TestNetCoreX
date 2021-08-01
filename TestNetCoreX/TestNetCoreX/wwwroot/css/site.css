@@ -1,5 +1,5 @@
 ﻿body {
-	background-color: #F3EBF6;
+	background-color: #fbfbfb;
 	font-family: 'Ubuntu', sans-serif;
 }
 
@@ -75,8 +75,8 @@ form.form1 {
 	color: #fff;
 	background: linear-gradient(to right, #9C27B0, #E040FB);
 	border: 0;
-	padding-left: 40px;
-	padding-right: 40px;
+	padding-left: 30px;
+	padding-right: 30px;
 	padding-bottom: 10px;
 	padding-top: 10px;
 	font-family: 'Ubuntu', sans-serif;

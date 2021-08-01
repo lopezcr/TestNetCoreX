@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -11,7 +12,7 @@ using TestNetCoreX.BusinessObject.Model;
 using TestNetCoreX.Common.Helpers;
 
 namespace TestNetCoreX.Controllers.Api
-{
+{     
     [Route("api/[controller]")]
     [ApiController]
     public class UsuarioController : ControllerBase
@@ -31,6 +32,7 @@ namespace TestNetCoreX.Controllers.Api
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] UsuarioCreacionDTO UsuarioDtoNuevo)
         {
+            
             if (context.Usuario.Where(x => x.Nombre == UsuarioDtoNuevo.Nombre).Count() > 0)
             {
 
@@ -96,37 +98,24 @@ namespace TestNetCoreX.Controllers.Api
         }
 
 
+        // public ActionResult PostLogin([FromBody] UsuarioCreacionDTO LoginDTO)
         [HttpPost("Login")]
-        public async Task<ActionResult> PostLogin([FromBody] UsuarioCreacionDTO UsuarioDtoNuevo)
+        public ActionResult PostLogin([FromBody] LoginDTO LoginDTO)
         {
-            if (context.Usuario.Where(x => x.Nombre == UsuarioDtoNuevo.Nombre).Count() > 0)
-            {
+            var respuesta = new Response<string>();
 
-                return BadRequest("El nombre de usuario ya existe");
+            string passwordEncritado = Encrypt.GetMD5(LoginDTO.Password);
+            var usuario = context.Usuario.Where(x => x.Email == LoginDTO.Email && x.PassWord == passwordEncritado).FirstOrDefault();
+            if (usuario == null)
+            {
+                respuesta.IsSuccess = false;
+                respuesta.Message = "El usuario no existe";
+                return Ok(respuesta);
             }
 
-            if (context.Usuario.Where(x => x.Email == UsuarioDtoNuevo.Email).Count() > 0)
-            {
-
-                return BadRequest("El email ya ha sido registrado");
-            }
-
-            string passwordEncritado = Encrypt.GetMD5(UsuarioDtoNuevo.PassWord);
-            var UsuarioNuevo = new Usuario()
-            {
-                Nombre = UsuarioDtoNuevo.Nombre,
-                FechaRegistro = DateTime.Now,
-                PassWord = passwordEncritado,
-                Activo = true,
-                Email = UsuarioDtoNuevo.Email,
-                Sexo = UsuarioDtoNuevo.Sexo,
-            };
-
-            context.Usuario.Add(UsuarioNuevo);
-            await context.SaveChangesAsync();
-
-
-            return Ok("Se genero correctamente el usuario");
+            HttpContext.Session.SetString("IsLogin", "true");
+            respuesta.IsSuccess = true;
+            return Ok(respuesta);
         }
     }
 }
