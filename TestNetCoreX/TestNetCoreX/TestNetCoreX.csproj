@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TestNetCoreX.AccessData\TestNetCoreX.AccessData.csproj" />
     <ProjectReference Include="..\TestNetCoreX.BusinessObject\TestNetCoreX.BusinessObject.csproj" />
+    <ProjectReference Include="..\TestNetCoreX.Common\TestNetCoreX.Common.csproj" />
   </ItemGroup>
 
 </Project>

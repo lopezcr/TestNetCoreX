@@ -23,7 +23,7 @@ namespace TestNetCoreX.AccessData.Entities
 
         [Required]
         [DataType(DataType.Password)]
-        [StringLength(20, MinimumLength = 10)]
+        [StringLength(32, MinimumLength = 10)]
         public string PassWord { get; set; }
 
         public DateTime FechaRegistro { get; set; }
