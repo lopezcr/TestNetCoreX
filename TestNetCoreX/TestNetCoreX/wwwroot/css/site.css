@@ -100,4 +100,8 @@ a {
 @media (max-width: 600px) {
 	.main {
 		border-radius: 0px;
+		margin: 4em auto;
+		margin-bottom: 0px;
+		width: 100%;
 	}
+}

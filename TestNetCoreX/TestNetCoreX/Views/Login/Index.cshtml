@@ -39,9 +39,9 @@
 
 <body>
 	<div class="main">
-		<p class="sign" align="center">Sign in</p>
+		<p class="sign" align="center">Inicio</p>
 		<form class="form1" id="loginform" name="loginform">
-			<input class="un " type="text" align="center" placeholder="Email" id="email" name="email">
+			<input class="un " type="text" align="center" placeholder="Correo" id="email" name="email">
 			<input class="pass" type="password" align="center" placeholder="Contraseña" id="password" name="password">
 			<input type="button" value="Iniciar sesion" class="submit" align="center" id="btnLogin" />
 			<p class="forgot" align="center"><a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Registro">Crear usuario</a> </p>
@@ -49,7 +49,7 @@
 		</form>
 	</div>
 
-	@Html.AntiForgeryToken();
+	 
 
 	<script>
 		$(document).ready(function () {

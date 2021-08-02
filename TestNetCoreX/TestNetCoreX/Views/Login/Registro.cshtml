@@ -44,13 +44,14 @@
 
 		#FormUser {
 			padding: 1rem;
+			display: grid;
 		}
 	</style>
 </head>
 
 <body>
 	<div class="main">
-		<p class="sign" align="center">Sign in</p>
+		<p class="sign" align="center">Registro</p>
 		<form class="FormUser" id="formUser" name="formUser">
 			<input type="hidden" id="IdUser" name="IdUser" value="new" />
 			<div class="form-group">
@@ -82,11 +83,11 @@
 				<input type="password" class="form-control" id="passwordRepetido" name="passwordRepetido" placeholder="Repetir Password">
 			</div>
 
-			<button type="button" class="btn btn-primary" id="btnGuardarForm" name="btnGuardarForm">Submit</button>
+			<button type="button" class="btn btn-primary" id="btnGuardarForm" name="btnGuardarForm">Registrar</button>
 		</form>
 	</div>
 
-	@Html.AntiForgeryToken();
+	 
 
 	<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
 	<script src="~/lib/jquery-validation/dist/additional-methods.js"></script>

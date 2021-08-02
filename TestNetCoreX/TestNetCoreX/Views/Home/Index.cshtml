@@ -18,12 +18,13 @@
 </style>
 
 <div >	 
-	<table id="tblUsuarios" cellpadding="0" cellspacing="0" border="1" style="border-collapse:collapse">
+	<table id="tblUsuarios" cellpadding="0" cellspacing="0" border="1"   class="table  table-bordered nowrap" style="width:100%">
 		<thead>
 			<tr>
 				<th>Nombre</th>
 				<th>Email</th>
 				<th>Acciones</th>
+				 
 				
 			</tr>
 		</thead>
@@ -67,7 +68,7 @@
 						<input type="password" class="form-control" id="passwordRepetido" name="passwordRepetido" placeholder="Repetir Password">
 					</div>
 
-					<button type="button" class="btn btn-primary" id="btnGuardarForm" name="btnGuardarForm">Submit</button>
+					<button type="button" class="btn btn-primary" id="btnGuardarForm" name="btnGuardarForm">Guardar</button>
 				</form>
 			</div>
 		</div>
@@ -191,6 +192,8 @@
 							]
 						});
 					$("#tblUsuarios").addClass("table");
+					new $.fn.dataTable.FixedHeader(table);
+
 				},
 				failure: function (response) {
 					alert(response);
