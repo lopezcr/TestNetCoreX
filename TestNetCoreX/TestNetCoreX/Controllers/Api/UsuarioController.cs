@@ -169,6 +169,13 @@ namespace TestNetCoreX.Controllers.Api
                 return Ok(respuesta);
             }
 
+            if (usuario.Activo == false)
+            {
+                respuesta.IsSuccess = false;
+                respuesta.Message = "El usuario ha sido eliminado";
+                return Ok(respuesta);
+            }
+
             HttpContext.Session.SetString("IsLogin", "true");
             respuesta.IsSuccess = true;
             return Ok(respuesta);
