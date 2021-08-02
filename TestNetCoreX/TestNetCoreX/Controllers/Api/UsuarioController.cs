@@ -102,11 +102,12 @@ namespace TestNetCoreX.Controllers.Api
                     respuesta.IsSuccess = false;
                     respuesta.Message = "El nombre de usuario ya esta registrado";
                     return Ok(respuesta);
-                } 
+                }
+                string passwordEncritado = Encrypt.GetMD5(AutorActualizar.PassWord);
                 Usuario.Nombre = AutorActualizar.Nombre;
                 Usuario.Email = AutorActualizar.Email;
                 Usuario.Sexo = AutorActualizar.Sexo;
-                Usuario.PassWord = AutorActualizar.PassWord;
+                Usuario.PassWord = passwordEncritado;
 
                 context.SaveChanges();
             }
