@@ -1,0 +1,244 @@
+﻿
+@{
+	ViewData["Title"] = "Index";
+	Layout = "";
+}
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="css/style.css">
+	<link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+	<script src="~/lib/sweetalert/sweetalert2.10.js"></script>
+	<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Sign in</title>
+	<link rel="stylesheet" href="~/css/site.css" />
+
+	<style>
+		#email-error, #password-error {
+			margin-left: 120px;
+			color: #d23434;
+		}
+
+		#email {
+			margin-bottom: 0px;
+		}
+
+		#password {
+			margin-top: 27px;
+			margin-bottom: 0px;
+		}
+
+		#btnLogin {
+			margin-top: 27px;
+		}
+
+		.main {
+			 
+			 height: auto; 
+			 
+		}
+
+		#FormUser {
+			padding: 1rem;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="main">
+		<p class="sign" align="center">Sign in</p>
+		<form class="FormUser" id="formUser" name="formUser">
+			<input type="hidden" id="IdUser" name="IdUser" value="new" />
+			<div class="form-group">
+				<label for="exampleInputEmail1">Usuario</label>
+				<input type="text" class="form-control" id="txtNombre" name="txtNombre" aria-describedby="nombreHelp" placeholder="Usuario">
+
+			</div>
+
+			<div class="form-group">
+				<label for="exampleInputEmail1">Genero</label>
+				<select class="form-control" id="sltGenero" name="sltGenero">
+					<option value="Hombre">Hombre</option>
+					<option value="Mujer">Mujer</option>
+				</select>
+
+			</div>
+
+			<div class="form-group">
+				<label for="exampleInputEmail1">Email address</label>
+				<input type="email" class="form-control" id="exampleInputEmail1" name="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+
+			</div>
+			<div class="form-group">
+				<label for="exampleInputPassword1">Password</label>
+				<input type="password" class="form-control" id="exampleInputPassword1" name="exampleInputPassword1" placeholder="Password">
+			</div>
+			<div class="form-group">
+				<label for="passwordRepetido">Password</label>
+				<input type="password" class="form-control" id="passwordRepetido" name="passwordRepetido" placeholder="Repetir Password">
+			</div>
+
+			<button type="button" class="btn btn-primary" id="btnGuardarForm" name="btnGuardarForm">Submit</button>
+		</form>
+	</div>
+
+	@Html.AntiForgeryToken();
+
+	<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+	<script src="~/lib/jquery-validation/dist/additional-methods.js"></script>
+	<script>
+		$(document).ready(function () {
+
+
+
+			$.validator.addMethod(
+				"ValidarPassword",
+				function (value, element, regexp) {
+					var re = new RegExp("[0-9]");
+					var reMin = new RegExp("[a-z]");
+					var reMax = new RegExp("[A-Z]");
+					var reSimbo = new RegExp("[^a-zA-Z0-9_]");
+
+					console.log(value);
+					console.log("minu" + reMin.test(value));
+					console.log("may" + reMax.test(value));
+					console.log("num" + re.test(value));
+					console.log("Simbolo" + reSimbo.test(value));
+
+					resultado = false;
+					if (reMin.test(value) && reMax.test(value) && re.test(value) && reSimbo.test(value)) {
+						resultado = true;
+					}
+					return this.optional(element) || (resultado);
+				},
+				"La contraseña debe tener minusculas mayuculas numeros y simbolos"
+			);
+
+
+			$.validator.addMethod(
+				"ContrasenaRepetida",
+				function (value, element, regexp) {
+					var resultado = false;
+					if ($("#exampleInputPassword1").val() == $("#passwordRepetido").val()) {
+						resultado = true;
+						console.log("las contraseñas son iguales");
+					}
+					else {
+						console.log("las contraseñas NO son iguales");
+					}
+					console.log(resultado);
+					return this.optional(element) || (resultado);
+				},
+				"Las contraseñas no coinciden"
+			);
+
+			$("#formUser").validate({
+				rules: {
+					'txtNombre': { required: true, minlength: 7 },
+					'exampleInputEmail1': { required: true, email: true },
+					//'exampleInputPassword1': { required: true, regex: "/^[0-9]$/", minWords:10}
+					'exampleInputPassword1': { required: true, minlength: 10, ValidarPassword: true },
+					'passwordRepetido': { required: true, ContrasenaRepetida: true }
+
+				},
+				errorClass: 'text-danger',
+				validClass: "success"
+			});
+
+
+		});
+
+
+		$("#btnGuardarForm").click(function () {
+			var form = $("#formUser");
+			form.valid();
+			if (!form.valid()) return false;
+			 
+			var dataEnviar = {
+				nombre: $("#txtNombre").val(),
+				email: $("#exampleInputEmail1").val(),
+				passWord: $("#exampleInputPassword1").val(),
+				sexo: $("#sltGenero").val()
+			};
+
+			var dataJson = JSON.stringify(dataEnviar);
+			$.ajax({
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				type: "POST",
+				url: "/api/usuario/Registro",
+				data: dataJson,
+				success: function (data) {
+					console.log(data);
+					try {
+						if (data.isSuccess == true) {
+							Swal.fire({
+								position: 'top-end',
+								icon: 'success',
+								title: 'Usuario creado correctamente',
+								showConfirmButton: false,
+								timer: 1500
+							});
+							window.location.replace("/home");
+
+						} else {
+							Swal.fire({
+								icon: 'error',
+								title: 'Oops...',
+								text: data.message
+							})
+						}
+					}
+					catch {
+						//console.log(2);
+
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops...',
+							text: 'Error al buscar la informacion'
+						})
+					}
+				},
+				error: function () {
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: 'Error al buscar la informacion'
+					})
+				}, beforeSend: function () {
+					Swal.fire({
+						title: 'Buscando',
+						timerProgressBar: true,
+						didOpen: () => {
+							Swal.showLoading()
+							timerInterval = setInterval(() => {
+								const content = Swal.getHtmlContainer()
+								if (content) {
+									const b = content.querySelector('b')
+									if (b) {
+										b.textContent = Swal.getTimerLeft()
+									}
+								}
+							}, 100)
+						},
+						willClose: () => {
+							clearInterval(timerInterval)
+						}
+					}).then((result) => {
+						if (result.dismiss === Swal.DismissReason.timer) {
+							console.log('I was closed by the timer')
+						}
+					})
+				}
+			})
+		});
+
+	</script>
+
+</body>
+
+</html>

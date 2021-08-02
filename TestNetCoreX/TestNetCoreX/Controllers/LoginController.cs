@@ -17,5 +17,14 @@ namespace TestNetCoreX.Controllers
             }
             return View();
         }
+
+        public IActionResult Registro()
+        {
+            if (HttpContext.Session.GetString("IsLogin") != null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            return View();
+        }
     }
 }

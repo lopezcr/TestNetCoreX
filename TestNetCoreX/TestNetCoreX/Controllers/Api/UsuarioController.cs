@@ -188,5 +188,55 @@ namespace TestNetCoreX.Controllers.Api
             respuesta.Result = usuario;
             return Ok(respuesta);
         }
+
+
+        [HttpPost("Registro")]
+        public async Task<ActionResult> PostRegistro([FromBody] UsuarioCreacionDTO UsuarioDtoNuevo)
+        {
+            var respuesta = new Response<string>();
+
+            if (context.Usuario.Where(x => x.Nombre == UsuarioDtoNuevo.Nombre).Count() > 0)
+            {
+                respuesta.IsSuccess = false;
+                respuesta.Message = "El nombre del usuario ya existe";
+                return Ok(respuesta);
+            }
+
+            if (context.Usuario.Where(x => x.Email == UsuarioDtoNuevo.Email).Count() > 0)
+            {
+                respuesta.IsSuccess = false;
+                respuesta.Message = "El email ya ha sido registrado";
+                return Ok(respuesta);
+            }
+
+            try
+            {
+                string passwordEncritado = Encrypt.GetMD5(UsuarioDtoNuevo.PassWord);
+                var UsuarioNuevo = new Usuario()
+                {
+                    Nombre = UsuarioDtoNuevo.Nombre,
+                    FechaRegistro = DateTime.Now,
+                    PassWord = passwordEncritado,
+                    Activo = true,
+                    Email = UsuarioDtoNuevo.Email,
+                    Sexo = UsuarioDtoNuevo.Sexo,
+                };
+
+
+
+                context.Usuario.Add(UsuarioNuevo);
+                await context.SaveChangesAsync();
+                HttpContext.Session.SetString("IsLogin", "true");
+            }
+            catch (Exception ex)
+            {
+                respuesta.IsSuccess = false;
+                respuesta.Message = ex.Message;
+                return Ok(respuesta);
+            }
+
+            respuesta.IsSuccess = true;
+            return Ok(respuesta);
+        }
     }
 }
