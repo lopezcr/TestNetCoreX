@@ -26,7 +26,7 @@ namespace TestNetCoreX.Controllers.Api
         [HttpGet]
         public ActionResult<IEnumerable<Usuario>> Get()
         {
-            return context.Usuario.Where(x => x.Activo == true).ToList();
+            return context.Usuario.ToList();
         }
 
         [HttpPost]
@@ -108,6 +108,7 @@ namespace TestNetCoreX.Controllers.Api
                 Usuario.Email = AutorActualizar.Email;
                 Usuario.Sexo = AutorActualizar.Sexo;
                 Usuario.PassWord = passwordEncritado;
+                Usuario.Activo= true;
 
                 context.SaveChanges();
             }

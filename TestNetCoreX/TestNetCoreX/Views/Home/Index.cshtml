@@ -15,17 +15,22 @@
 		.editUser img {
 			width: 1.8rem;
 		}
+
+	#infoUsuarioActivo {
+		color: #f71616;
+	}
 </style>
 
 <div >	 
+	<button class="btn btn-primary" style="margin-bottom: 1rem;" id="btnUsuariosActivos">Mostrar Eliminados</button>
+	<input type="hidden" id="hddnUsuarioActivos" name="hddnUsuarioActivos" value="true" />
 	<table id="tblUsuarios" cellpadding="0" cellspacing="0" border="1"   class="table  table-bordered nowrap" style="width:100%">
 		<thead>
 			<tr>
 				<th>Nombre</th>
 				<th>Email</th>
-				<th>Acciones</th>
+				<th>Acciones</th> 
 				 
-				
 			</tr>
 		</thead>
 		<tbody></tbody>
@@ -67,7 +72,7 @@
 						<label for="passwordRepetido">Password</label>
 						<input type="password" class="form-control" id="passwordRepetido" name="passwordRepetido" placeholder="Repetir Password">
 					</div>
-
+					<p id="infoUsuarioActivo">El usuario sera activado</p>
 					<button type="button" class="btn btn-primary" id="btnGuardarForm" name="btnGuardarForm">Guardar</button>
 				</form>
 			</div>
@@ -83,9 +88,7 @@
 	<script type="text/javascript">
 
 		$(document).ready(function () {
-
-
-
+			 
 			$.validator.addMethod(
 				"ValidarPassword",
 				function (value, element, regexp) {
@@ -148,9 +151,7 @@
 			$("#txtName").on('keyup', function () {
 				BindTable();
 			});
-
-			
-
+			 
 		});
 
 		function BindTable() {
@@ -162,8 +163,27 @@
 				contentType: "application/json; charset=utf-8",
 				dataType: "json",
 				success: function (response) {
- 
-					var customers = eval(response);
+
+					console.log(response);
+					var listado = [];
+					if ($("#hddnUsuarioActivos").val() == "true") {
+						for (var i = 0; i < response.length; i++) {
+							if (response[i].activo == true) {
+								listado.push(response[i]);
+							}
+						}
+					} else {
+						for (var i = 0; i < response.length; i++) {
+							if (response[i].activo == false) {
+								listado.push(response[i]);
+							}
+						}
+					}
+
+					
+
+
+					var customers = eval(listado);
 					table = $("#tblUsuarios").DataTable();
 					table.destroy();
 					$('#tblUsuarios').empty();
@@ -177,22 +197,37 @@
 							bPaginate: true,
 							data: customers,
 							columns: [
-								{ 'data': 'nombre' },
-								{ 'data': 'email' },
+								{
+									'data': 'nombre',
+									title: "Usuario"},
+								{
+									'data': 'email',
+									title: "Correo"},
 								{
 									'data': 'id',
 									render: function (data ) {
 										var html = '<div class="editUser">';
-										html = html + '<a onclick="EliminarUsuario(\'' + data + '\')"><img src="/image/delete.png" /></a>';
+
+										if ($("#hddnUsuarioActivos").val() == "true") {
+											html = html + '<img src="/image/userActivo.jpg" />';
+											html = html + '<a onclick="EliminarUsuario(\'' + data + '\')"><img src="/image/trash.png" /></a>';
+										} else {
+											html = html + '<img src="/image/userNoActivo.jpg" />';
+										}
+
+										
 										html = html + '<a onclick="BuscarUsuario(\'' + data + '\')"><img src="/image/edit.png" /></a>';
 										html = html + '<div class="editUser">';
 										return html;
-									}
+									},
+									title: "Acciones"
 								}
-							]
+							],
+
+
+
 						});
 					$("#tblUsuarios").addClass("table");
-					new $.fn.dataTable.FixedHeader(table);
 
 				},
 				failure: function (response) {
@@ -550,6 +585,15 @@
 			$("#IdUser").val(data.id);
 
 			$("#ModalUser").modal('show');
+
+
+			if (data.activo == true) {
+				$("#infoUsuarioActivo").hide();
+			}
+
+			else {
+				$("#infoUsuarioActivo").show();
+			}
 		}
 
 
@@ -560,9 +604,28 @@
 			$("#exampleInputPassword1").val("");
 			$("#IdUser").val(0);			
 			$("#passwordRepetido").val("");
+			$("#infoUsuarioActivo").hide();
+				
 		}
 
 
+
+		$("#btnUsuariosActivos").click(function () {
+
+			var userA = $("#hddnUsuarioActivos").val();
+			if (userA == "true") {
+				$("#hddnUsuarioActivos").val("false");
+				 
+				 
+				$("#btnUsuariosActivos").html('Mostrar Activos'); 
+			}
+			else {
+				$("#hddnUsuarioActivos").val("true");
+		 
+				$("#btnUsuariosActivos").html('Mostrar Eliminados');
+			}
+			BindTable();
+		});
 
 
 	</script>
