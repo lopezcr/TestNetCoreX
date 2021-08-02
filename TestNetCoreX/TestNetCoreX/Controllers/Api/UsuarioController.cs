@@ -32,73 +32,127 @@ namespace TestNetCoreX.Controllers.Api
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] UsuarioCreacionDTO UsuarioDtoNuevo)
         {
-            
+            var respuesta = new Response<string>();
+
             if (context.Usuario.Where(x => x.Nombre == UsuarioDtoNuevo.Nombre).Count() > 0)
             {
-
-                return BadRequest("El nombre de usuario ya existe");
+                respuesta.IsSuccess = false;
+                respuesta.Message = "El nombre del usuario ya existe";
+                return Ok(respuesta);
             }
 
             if (context.Usuario.Where(x => x.Email == UsuarioDtoNuevo.Email).Count() > 0)
             {
-
-                return BadRequest("El email ya ha sido registrado");
+                respuesta.IsSuccess = false;
+                respuesta.Message = "El email ya ha sido registrado";
+                return Ok(respuesta);
             }
 
-            string passwordEncritado= Encrypt.GetMD5(UsuarioDtoNuevo.PassWord);
-            var UsuarioNuevo = new Usuario()
+            try
             {
-                Nombre = UsuarioDtoNuevo.Nombre,
-                FechaRegistro = DateTime.Now,
-                PassWord = passwordEncritado,
-                Activo = true,
-                Email = UsuarioDtoNuevo.Email,
-                Sexo = UsuarioDtoNuevo.Sexo,
-            };
+                string passwordEncritado = Encrypt.GetMD5(UsuarioDtoNuevo.PassWord);
+                var UsuarioNuevo = new Usuario()
+                {
+                    Nombre = UsuarioDtoNuevo.Nombre,
+                    FechaRegistro = DateTime.Now,
+                    PassWord = passwordEncritado,
+                    Activo = true,
+                    Email = UsuarioDtoNuevo.Email,
+                    Sexo = UsuarioDtoNuevo.Sexo,
+                };
 
-            context.Usuario.Add(UsuarioNuevo);
-            await context.SaveChangesAsync();
+                context.Usuario.Add(UsuarioNuevo);
+                await context.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                respuesta.IsSuccess = false;
+                respuesta.Message = ex.Message;
+                return Ok(respuesta);
+            }
 
-             
-            return Ok("Se genero correctamente el usuario");
+            respuesta.IsSuccess = true;
+            return Ok(respuesta);
         }
 
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] UsuarioCreacionDTO AutorActualizar)
         {
+            var respuesta = new Response<string>();
              
-            var Usuario = context.Usuario.Where(x => x.ID == id).FirstOrDefault();
-
-            if (Usuario == null)
+            try
             {
-                return BadRequest("Usuario no encontrado");
+                var Usuario = context.Usuario.Where(x => x.ID == id).FirstOrDefault();
+                if (Usuario == null)
+                {
+                    respuesta.IsSuccess = false;
+                    respuesta.Message = "El usuario no existe";
+                    return Ok(respuesta);
+                }
+
+                if(context.Usuario.Where(x => x.ID != id && x.Email == AutorActualizar.Email).FirstOrDefault() != null)
+                {
+                    respuesta.IsSuccess = false;
+                    respuesta.Message = "Existe otro usuario registrado con el mismo email";
+                    return Ok(respuesta);
+                }
+
+                if (context.Usuario.Where(x => x.ID != id && x.Nombre == AutorActualizar.Nombre).FirstOrDefault() != null)
+                {
+                    respuesta.IsSuccess = false;
+                    respuesta.Message = "El nombre de usuario ya esta registrado";
+                    return Ok(respuesta);
+                } 
+                Usuario.Nombre = AutorActualizar.Nombre;
+                Usuario.Email = AutorActualizar.Email;
+                Usuario.Sexo = AutorActualizar.Sexo;
+                Usuario.PassWord = AutorActualizar.PassWord;
+
+                context.SaveChanges();
             }
-
-            Usuario.Nombre = AutorActualizar.Nombre;
-            Usuario.Email = AutorActualizar.Email;
-            Usuario.Sexo = AutorActualizar.Sexo;
-            Usuario.PassWord = AutorActualizar.PassWord;
-
-            context.SaveChanges();
-            return Ok();
+            catch(Exception ex)
+            {
+                respuesta.IsSuccess = false;
+                respuesta.Message = ex.Message;
+                return Ok(respuesta);
+            }
+             
+            respuesta.IsSuccess = true;
+            return Ok(respuesta);
         }
 
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<Usuario>> Delete(int id)
         {
-            int autorId = await context.Usuario.Select(x => x.ID).FirstOrDefaultAsync(x => x == id);
-            if (autorId == default(int))
+
+            var respuesta = new Response<Usuario>();             
+            try
             {
-                return NotFound();
+                var usuario = await context.Usuario.Where(x => x.ID == id).FirstOrDefaultAsync();
+
+                if (usuario == null)
+                {
+                    respuesta.IsSuccess = false;
+                    respuesta.Message = "No se encontro el usuario";
+                    return Ok(respuesta);
+                }
+                usuario.Activo = false; 
+                await context.SaveChangesAsync();
             }
-            context.Usuario.Remove(new Usuario { ID = autorId });
-            await context.SaveChangesAsync();
-            return Ok("Usuario eliminado correctamente");
+            catch
+            {
+                respuesta.IsSuccess = false;
+                respuesta.Message = "Error al eliminar el usuario";
+                return Ok(respuesta);
+            }
+             
+            respuesta.IsSuccess = true; 
+            return Ok(respuesta);
         }
 
 
-        // public ActionResult PostLogin([FromBody] UsuarioCreacionDTO LoginDTO)
+        
         [HttpPost("Login")]
         public ActionResult PostLogin([FromBody] LoginDTO LoginDTO)
         {
@@ -115,6 +169,23 @@ namespace TestNetCoreX.Controllers.Api
 
             HttpContext.Session.SetString("IsLogin", "true");
             respuesta.IsSuccess = true;
+            return Ok(respuesta);
+        }
+
+        [HttpGet("{id}", Name = "ObtenerUsuario")] 
+        public async Task<ActionResult<Response<Usuario>>> Get(int id)
+        {
+            var respuesta = new Response<Usuario>();
+            var usuario = await context.Usuario.Where(x => x.ID == id).FirstOrDefaultAsync();
+
+            if (usuario == null)
+            {
+                respuesta.IsSuccess = false;
+                respuesta.Message="No se encontro el usuario";
+                return Ok(respuesta);
+            }
+            respuesta.IsSuccess = true;
+            respuesta.Result = usuario;
             return Ok(respuesta);
         }
     }

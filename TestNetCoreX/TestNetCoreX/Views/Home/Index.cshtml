@@ -1,8 +1,564 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+	ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+ 
+<style>
+	.FormUser {
+		padding: 2rem;
+	}
+
+	.editUser {
+		display: inline-flex;
+	}
+
+		.editUser img {
+			width: 1.8rem;
+		}
+</style>
+
+<div >	 
+	<table id="tblUsuarios" cellpadding="0" cellspacing="0" border="1" style="border-collapse:collapse">
+		<thead>
+			<tr>
+				<th>Nombre</th>
+				<th>Email</th>
+				<th>Acciones</th>
+				
+			</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+	<button id="btnAddUser" name="btnAddUser" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Agregar usuario</button>
 </div>
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="ModalUser" name="ModalUser">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="divFormUser">
+				<form class="FormUser" id="formUser" name="formUser">
+					<input type="hidden" id="IdUser" name="IdUser" value="new" />
+					<div class="form-group">
+						<label for="exampleInputEmail1">Usuario</label>
+						<input type="text" class="form-control" id="txtNombre" name="txtNombre" aria-describedby="nombreHelp" placeholder="Usuario">
+
+					</div>
+
+					<div class="form-group">
+						<label for="exampleInputEmail1">Genero</label>
+						<select class="form-control" id="sltGenero" name="sltGenero">
+							<option value="Hombre">Hombre</option>
+							<option value="Mujer">Mujer</option>
+						</select>
+
+					</div>
+
+					<div class="form-group">
+						<label for="exampleInputEmail1">Email address</label>
+						<input type="email" class="form-control" id="exampleInputEmail1" name="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+
+					</div>
+					<div class="form-group">
+						<label for="exampleInputPassword1">Password</label>
+						<input type="password" class="form-control" id="exampleInputPassword1" name="exampleInputPassword1" placeholder="Password">
+					</div>
+					<div class="form-group">
+						<label for="passwordRepetido">Password</label>
+						<input type="password" class="form-control" id="passwordRepetido" name="passwordRepetido" placeholder="Repetir Password">
+					</div>
+
+					<button type="button" class="btn btn-primary" id="btnGuardarForm" name="btnGuardarForm">Submit</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+ 
+@section Scripts
+{
+	<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+	<script src="~/lib/jquery-validation/dist/additional-methods.js"></script>
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+
+
+
+			$.validator.addMethod(
+				"ValidarPassword",
+				function (value, element, regexp) {
+					var re = new RegExp("[0-9]");
+					var reMin = new RegExp("[a-z]");
+					var reMax = new RegExp("[A-Z]");
+					var reSimbo = new RegExp("[^a-zA-Z0-9_]");
+
+					console.log( value);
+					console.log("minu" + reMin.test(value));
+					console.log("may" + reMax.test(value));
+					console.log("num" + re.test(value));
+					console.log("Simbolo" + reSimbo.test(value));
+
+					resultado = false;
+					if (reMin.test(value) && reMax.test(value) && re.test(value) && reSimbo.test(value)) {
+						resultado = true;
+					} 
+					return this.optional(element) || (resultado );
+				},
+				"La contraseña debe tener minusculas mayuculas numeros y simbolos"
+			);
+
+
+			$.validator.addMethod(
+				"ContrasenaRepetida",
+				function (value, element, regexp) {
+					var resultado = false;					
+					if ($("#exampleInputPassword1").val() == $("#passwordRepetido").val()) {
+						resultado = true;
+						console.log("las contraseñas son iguales");
+					}
+					else {
+						console.log("las contraseñas NO son iguales");
+					}
+					console.log(resultado);
+					return this.optional(element) || (resultado);
+				},
+				"Las contraseñas no coinciden"
+			);
+			 
+			$("#formUser").validate({
+				rules: {
+					'txtNombre': { required: true, minlength: 7 },
+					'exampleInputEmail1': { required: true, email: true },
+					//'exampleInputPassword1': { required: true, regex: "/^[0-9]$/", minWords:10}
+					'exampleInputPassword1': { required: true, minlength: 10, ValidarPassword: true },
+					'passwordRepetido': { required: true, ContrasenaRepetida: true }
+					 				 
+				},
+				errorClass: 'text-danger',
+				validClass: "success"
+			});
+
+
+		});
+
+		$(function () {
+			BindTable();
+			$("#txtName").on('keyup', function () {
+				BindTable();
+			});
+
+			
+
+		});
+
+		function BindTable() {
+			var obj = {};
+			obj.ContactName = $("#txtName").val();
+			$.ajax({
+				type: "GEt",
+				url: "/api/usuario",				
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				success: function (response) {
+ 
+					var customers = eval(response);
+					table = $("#tblUsuarios").DataTable();
+					table.destroy();
+					$('#tblUsuarios').empty();
+					table = $("#tblUsuarios").DataTable(
+						{
+							bLengthChange: true,
+							lengthMenu: [[5, 10, -1], [5, 10, "All"]],
+							bFilter: true,
+							bSort: true,							 
+							bPaginate: true,
+							data: customers,
+							columns: [
+								{ 'data': 'nombre' },
+								{ 'data': 'email' },
+								{
+									'data': 'id',
+									render: function (data ) {
+										var html = '<div class="editUser">';
+										html = html + '<a onclick="EliminarUsuario(\'' + data + '\')"><img src="/image/delete.png" /></a>';
+										html = html + '<a onclick="BuscarUsuario(\'' + data + '\')"><img src="/image/edit.png" /></a>';
+										html = html + '<div class="editUser">';
+										return html;
+									}
+								}
+							]
+						});
+					$("#tblUsuarios").addClass("table");
+				},
+				failure: function (response) {
+					alert(response);
+				},
+				error: function (response) {
+					alert(response);
+				}
+			});
+		}
+
+		function EliminarUsuario(data) {
+			 
+			Swal.fire({
+				title: 'Are you sure?',
+				text: "You won't be able to revert this!",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Yes, delete it!'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						contentType: "application/json; charset=utf-8",
+						dataType: "json",
+						type: "DELETE",
+						url: "/api/usuario/" + data,
+						success: function (data) {
+							console.log(data);
+							try {
+								if (data.isSuccess == true) {
+									BindTable();
+									Swal.fire({
+										icon: 'success',
+										title: 'Proyecto',
+										text: "Usuario Eliminado correctamente"
+									})
+								} else {
+									Swal.fire({
+										icon: 'error',
+										title: 'Oops...',
+										text: data.message
+									})
+								}
+							}
+							catch {
+								//console.log(2);
+
+								Swal.fire({
+									icon: 'error',
+									title: 'Oops...',
+									text: 'Error al buscar la informacion'
+								})
+							}
+						},
+						error: function () {
+							Swal.fire({
+								icon: 'error',
+								title: 'Oops...',
+								text: 'Error al buscar la informacion'
+							})
+						}, beforeSend: function () {
+							Swal.fire({
+								title: 'Buscando',
+								timerProgressBar: true,
+								didOpen: () => {
+									Swal.showLoading()
+									timerInterval = setInterval(() => {
+										const content = Swal.getHtmlContainer()
+										if (content) {
+											const b = content.querySelector('b')
+											if (b) {
+												b.textContent = Swal.getTimerLeft()
+											}
+										}
+									}, 100)
+								},
+								willClose: () => {
+									clearInterval(timerInterval)
+								}
+							}).then((result) => {
+								if (result.dismiss === Swal.DismissReason.timer) {
+									console.log('I was closed by the timer')
+								}
+							})
+						}
+					})
+				}
+			})
+		}
+
+		 
+
+		$("#btnAddUser").click(function () {
+			limpiarFormulario();
+			$("#IdUser").val(0);
+		});
+
+		$("#btnGuardarForm").click(function () {
+			if ($("#IdUser").val() == "0") {
+				GuardarNuevoUsuario();
+			}
+			else {
+				EditarUsuario();
+			}
+		});
+
+		function GuardarNuevoUsuario() {
+
+			var form = $("#formUser");
+			form.valid();
+			if (!form.valid()) return false;
+
+			 
+
+			var dataEnviar = {
+				nombre: $("#txtNombre").val(),
+				email: $("#exampleInputEmail1").val(),
+				passWord: $("#exampleInputPassword1").val(),
+				sexo: $("#sltGenero").val()				 
+			};
+
+			var dataJson = JSON.stringify(dataEnviar);
+			$.ajax({
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				type: "POST",
+				url: "/api/usuario",
+				data: dataJson,
+				success: function (data) {
+					console.log(data);
+					try {						
+						if (data.isSuccess == true) {
+							Swal.fire({
+								position: 'top-end',
+								icon: 'success',
+								title: 'Usuario creado correctamente',
+								showConfirmButton: false,
+								timer: 1500
+							});
+							BindTable();
+							limpiarFormulario();
+
+						} else {
+							Swal.fire({
+								icon: 'error',
+								title: 'Oops...',
+								text: data.message
+							})
+						}
+					}
+					catch {
+						//console.log(2);
+
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops...',
+							text: 'Error al buscar la informacion'
+						})
+					}
+				},
+				error: function () {
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: 'Error al buscar la informacion'
+					})
+				}, beforeSend: function () {
+					Swal.fire({
+						title: 'Buscando',
+						timerProgressBar: true,
+						didOpen: () => {
+							Swal.showLoading()
+							timerInterval = setInterval(() => {
+								const content = Swal.getHtmlContainer()
+								if (content) {
+									const b = content.querySelector('b')
+									if (b) {
+										b.textContent = Swal.getTimerLeft()
+									}
+								}
+							}, 100)
+						},
+						willClose: () => {
+							clearInterval(timerInterval)
+						}
+					}).then((result) => {						
+						if (result.dismiss === Swal.DismissReason.timer) {
+							console.log('I was closed by the timer')
+						}
+					})
+				}
+			})
+		}
+
+
+		function BuscarUsuario(data) {			 		 
+			$.ajax({
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				type: "GET",
+				url: "/api/usuario/" + data,				 
+				success: function (data) {
+					console.log(data);
+					try {
+						if (data.isSuccess == true) {
+							Swal.close()
+							MostrarUsuario(data.result)
+							
+						} else {
+							Swal.fire({
+								icon: 'error',
+								title: 'Oops...',
+								text: data.message
+							})
+						}
+					}
+					catch {
+						//console.log(2);
+
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops...',
+							text: 'Error al buscar la informacion'
+						})
+					}
+				},
+				error: function () {
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: 'Error al buscar la informacion'
+					})
+				}, beforeSend: function () {
+					Swal.fire({
+						title: 'Buscando',
+						timerProgressBar: true,
+						didOpen: () => {
+							Swal.showLoading()
+							timerInterval = setInterval(() => {
+								const content = Swal.getHtmlContainer()
+								if (content) {
+									const b = content.querySelector('b')
+									if (b) {
+										b.textContent = Swal.getTimerLeft()
+									}
+								}
+							}, 100)
+						},
+						willClose: () => {
+							clearInterval(timerInterval)
+						}
+					}).then((result) => {
+						if (result.dismiss === Swal.DismissReason.timer) {
+							console.log('I was closed by the timer')
+						}
+					})
+				}
+			})
+		}
+
+
+		function EditarUsuario() {
+
+			var form = $("#formUser");
+			form.valid();
+			if (!form.valid()) return false;
+
+
+			var idUsuario = $("#IdUser").val();
+			var dataEnviar = {
+				nombre: $("#txtNombre").val(),
+				email: $("#exampleInputEmail1").val(),
+				passWord: $("#exampleInputPassword1").val(),
+				sexo: $("#sltGenero").val()
+			};
+
+			var dataJson = JSON.stringify(dataEnviar);
+
+			$.ajax({
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				type: "PUT",
+				data: dataJson,
+				url: "/api/usuario/" + idUsuario,
+				success: function (data) {
+					console.log(data);
+					try {
+						if (data.isSuccess == true) {
+							BindTable();
+							$("#ModalUser").modal('hide');
+							Swal.fire(
+								'Editar usuario',
+								'Usuario editado correctamente',
+								'success'
+							)
+						} else {
+							Swal.fire({
+								icon: 'error',
+								title: 'Oops...',
+								text: data.message
+							})
+						}
+					}
+					catch {
+						//console.log(2);
+
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops...',
+							text: 'Error al buscar la informacion'
+						})
+					}
+				},
+				error: function () {
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: 'Error al buscar la informacion'
+					})
+				}, beforeSend: function () {
+					Swal.fire({
+						title: 'Buscando',
+						timerProgressBar: true,
+						didOpen: () => {
+							Swal.showLoading()
+							timerInterval = setInterval(() => {
+								const content = Swal.getHtmlContainer()
+								if (content) {
+									const b = content.querySelector('b')
+									if (b) {
+										b.textContent = Swal.getTimerLeft()
+									}
+								}
+							}, 100)
+						},
+						willClose: () => {
+							clearInterval(timerInterval)
+						}
+					}).then((result) => {
+						if (result.dismiss === Swal.DismissReason.timer) {
+							console.log('I was closed by the timer')
+						}
+					})
+				}
+			})
+		}
+
+		function MostrarUsuario(data) {
+			$("#txtNombre").val(data.nombre);
+			$("#sltGenero").val(data.sexo);
+			$("#exampleInputEmail1").val(data.email);
+			$("#exampleInputPassword1").val(data);
+			$("#IdUser").val(data.id);
+
+			$("#ModalUser").modal('show');
+		}
+
+
+		function limpiarFormulario() {
+			$("#txtNombre").val("");
+			$("#sltGenero").val("Hombre");
+			$("#exampleInputEmail1").val("");
+			$("#exampleInputPassword1").val("");
+			$("#IdUser").val(0);			
+		}
+
+
+
+
+	</script>
+}

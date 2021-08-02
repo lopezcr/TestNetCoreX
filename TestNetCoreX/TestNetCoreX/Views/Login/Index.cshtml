@@ -8,22 +8,43 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="css/style.css">
 	<link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+	<script src="~/lib/sweetalert/sweetalert2.10.js"></script>
+	<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+
+
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Sign in</title>
 	<link rel="stylesheet" href="~/css/site.css" />
 
 	<style>
+		#email-error, #password-error {
+			margin-left: 120px;
+			color: #d23434;
+		}
+
+		#email {
+			margin-bottom: 0px;
+		}
+		#password {
+			margin-top: 27px;
+			margin-bottom: 0px;
+		}
+
+		#btnLogin {
+			margin-top: 27px;
+		}
+
 	</style>
 </head>
 
 <body>
 	<div class="main">
 		<p class="sign" align="center">Sign in</p>
-		<form class="form1">
+		<form class="form1" id="loginform" name="loginform">
 			<input class="un " type="text" align="center" placeholder="Email" id="email" name="email">
 			<input class="pass" type="password" align="center" placeholder="Contraseña" id="password" name="password">
 			<input type="button" value="Iniciar sesion" class="submit" align="center" id="btnLogin" />
-			<p class="forgot" align="center"><a href="#">Forgot Password?</p>
+			 
 		</form>
 	</div>
 
@@ -32,29 +53,35 @@
 	<script>
 		$(document).ready(function () {
 
-			// jQuery methods go here...
+			$("#loginform").validate({
+				rules: {
+					'email': { required: true },
+					'password': { required: true }
+				},
+				errorClass: 'text-danger',
+				validClass: "success"
+			});
 
 
 
 			$("#btnLogin").click(function () {
-				 
+				var form = $("#loginform");
+				form.valid();
+				if (!form.valid()) return false;
+
 				var dataEnviar = {
 					email: $("#email").val(),
 					passWord: $("#password").val()
 				};
 
-				var dataJson = JSON.stringify(dataEnviar);
-
-				console.log(dataEnviar);
-				 
-
+				var dataJson = JSON.stringify(dataEnviar); 
 				$.ajax({
 
 					contentType: "application/json; charset=utf-8",
 					dataType: "json",
 
 					type: "POST",
-					url: " /api/usuario/login",
+					url: "/api/usuario/login",
 					data: dataJson,
 					success: function (data) {
 						console.log(data);
@@ -62,60 +89,63 @@
 						try {
 							//dataJS = JSON.parse(data);
 							if (data.isSuccess == true) {
+								Swal.fire({
+									position: 'top-end',
+									icon: 'success',
+									title: 'Usuario encontrado',
+									showConfirmButton: false,
+									timer: 1500
+								})
 								window.location.replace("/home");
 							} else {
-								console.log("Usuario no encontrado")
+								Swal.fire({
+									icon: 'error',
+									title: 'Oops...',
+									text: data.message
+								})
 							}
 						}
 						catch {
 							//console.log(2);
 
-							//Swal.fire({
-							//	imageUrl: $('#URL_BASE').val() + 'images/IconRedError.png',
-							//	imageWidth: 50,
-							//	imageHeight: 50,
-							//	imageAlt: 'Custom image',
-							//	title: '¡Lo sentimos!',
-							//	confirmButtonText:
-							//		'Regresar',
-							//	text: 'No se pudo completar la accion',
-							//	footer: '<img class="footerCustomAler" src="' + $('#URL_BASE').val() + 'images/possic2.png" ></img>',
-							//	customClass: {
-							//		container: 'sweetCustomMsj'
-							//	}
-							//})
+							Swal.fire({
+								icon: 'error',
+								title: 'Oops...',
+								text: 'Error al buscar la informacion'
+							})
 						}
 					},
 					error: function () {
-						//clienteSeleccionado = null;
-
-						//Swal.fire({
-						//	imageUrl: $('#URL_BASE').val() + 'images/IconRedError.png',
-						//	imageWidth: 50,
-						//	imageHeight: 50,
-						//	imageAlt: 'Custom image',
-						//	title: '¡Lo sentimos!',
-						//	confirmButtonText:
-						//		'Regresar',
-						//	text: 'No se pudo acompletar la accion',
-						//	footer: '<img class="footerCustomAler" src="' + $('#URL_BASE').val() + 'images/possic2.png" ></img>',
-						//	customClass: {
-						//		container: 'sweetCustomMsj'
-						//	}
-						//});
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops...',
+							text: 'Error al buscar la informacion'
+						})
 					}, beforeSend: function () {
-						//Swal.fire({
-						//	allowOutsideClick: false,
-						//	showConfirmButton: false,
-						//	showClass: {
-						//		popup: 'animated fadeIn faster'
-						//	},
-						//	customClass: {
-						//		container: 'sweetLoadingcontent'
-						//	},
-						//	html: "<div class='animacionJson'><lottie-player src='" + $('#URL_BASE').val() + "js/Loading.json' background='transparent' speed='1' style='width: 150px; height: 150px;' loop  autoplay>" +
-						//		"</lottie-player></div>"
-						//});
+						Swal.fire({
+							title: 'Buscando',							 
+							timerProgressBar: true,
+							didOpen: () => {
+								Swal.showLoading()
+								timerInterval = setInterval(() => {
+									const content = Swal.getHtmlContainer()
+									if (content) {
+										const b = content.querySelector('b')
+										if (b) {
+											b.textContent = Swal.getTimerLeft()
+										}
+									}
+								}, 100)
+							},
+							willClose: () => {
+								clearInterval(timerInterval)
+							}
+						}).then((result) => {
+							/* Read more about handling dismissals below */
+							if (result.dismiss === Swal.DismissReason.timer) {
+								console.log('I was closed by the timer')
+							}
+						})
 					}
 				})
 
